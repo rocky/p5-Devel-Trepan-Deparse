@@ -1,0 +1,11 @@
+*~
+/Build
+/ChangeLog
+/MANIFEST.SKIP.bak
+/META.json
+/META.yml
+/MYMETA.json
+/MYMETA.yml
+/_build
+/blib
+/how-to-make-a-release.txt

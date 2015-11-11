@@ -8,7 +8,7 @@ This can tell you exactly where you are stopped.
 INSTALLATION
 ------------
 
-To install this Devel::Trepan, run the following commands:
+To install this, run the following commands:
 
 	perl Build.PL
 	make

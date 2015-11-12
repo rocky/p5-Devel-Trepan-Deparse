@@ -5,9 +5,8 @@ ChangeLog
 GNUmakefile
 MANIFEST			This list of files
 Makefile.PL
-README				README in perlpod format for CPAN
 README.md			README in Markdown format for github
-example/five.pm
+example/five.pl
 gpl-2.0.txt
 lib/Devel/Trepan/CmdProcessor/Command/Deparse.pm
 lib/Devel/Trepan/Deparse.pm
@@ -18,8 +17,6 @@ t/10test-opflags.t              interpret_flags tests
 t/20test-deparse.t
 t/Helper.pm
 t/Makefile                      boilerplate to rerun in top-level Makefile
-t/data/disasm2.cmd
-t/data/disasm2.right
 t/data/deparse.cmd
 t/data/deparse.right
 META.yml

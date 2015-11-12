@@ -155,6 +155,15 @@ sub get_prev_addr($$) {
 }
 
 # Print Perl text, possibly syntax highlighted.
+sub pmsg($$)
+{
+    my ($proc, $text,$short) = @_;
+    $text = Devel::Trepan::DB::LineCache::highlight_string($text) if $proc->{settings}{highlight};
+    $text = B::DeparseTree::Printer::short_str($text, $proc->{settings}{maxwidth}) if $short;
+    $proc->msg($text);
+}
+
+# Print Perl text, possibly syntax highlighted.
 # We add leader info which may have op addresses
 # if desired
 sub pmsg_info($$$$)
@@ -166,16 +175,8 @@ sub pmsg_info($$$$)
     if (grep($_ eq '-a', @{$options})) {
 	$leader = sprintf "OP: 0x%0x $leader", ${$info->{op}};
     }
-    $text = "# ${leader}...\n$text" if $leader;
-    $proc->msg($text);
-}
-
-sub pmsg($$)
-{
-    my ($self, $text) = @_;
-    my $proc = $self->{proc};
-    $text = Devel::Trepan::DB::LineCache::highlight_string($text) if $proc->{settings}{highlight};
-    $proc->msg($text);
+    $proc->msg("# ${leader}...") if $leader;
+    pmsg($proc, $text, 1);
 }
 
 # This method runs the command
@@ -285,7 +286,7 @@ sub run($$)
 		if @package_parts;
 	    my $short_func = $package_parts[-1];
 	    $text = "package $prefix;\nsub $short_func" . $deparse->coderef2text(\&$funcname);
-	    $self->pmsg($text);
+	    pmsg($proc, $text, 0);
 	    return;
 	}
     } else  {
@@ -296,7 +297,7 @@ sub run($$)
 	    my $cmd="$EXECUTABLE_NAME  -MO=DeparseTree,-sC,$options $filename";
 	    $text = `$cmd 2>&1`;
 	    if ($? >> 8 == 0) {
-		$self->pmsg($text);
+		pmsg($proc, $text, 0);
 	    } else {
 		$proc->errmsg("Error running $cmd");
 		$proc->errmsg($text);

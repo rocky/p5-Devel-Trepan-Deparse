@@ -14,12 +14,10 @@ BEGIN {
 use rlib $TREPAN_DIR;
 use Test::More;
 
-plan skip_all => "Not ready yet";
+# plan skip_all => "Not ready yet";
 
 if ($OSNAME eq 'MSWin32') {
     plan skip_all => "Strawberry Perl doesn't handle exec well"
-} elsif ($B::Concise::VERSION lt '0.83') {
-    plan skip_all => "Need a B::Concise 0.83 or greater for this test"
 } else {
     plan;
 }
@@ -51,9 +49,8 @@ my $opts = {
 };
 
 my $test_prog = File::Spec->catfile(dirname(__FILE__),
-				    qw(.. example five.pm));
+				    qw(.. example five.pl));
 my $ok = Helper::run_debugger("$test_prog", $TREPAN_DIR,
 			      'deparse.cmd', undef, $opts);
-$ok = Helper::run_debugger("-e 1", $TREPAN_DIR,
-			   'deparse.cmd', undef, $opts);
+is $ok, 0;
 done_testing;

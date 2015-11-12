@@ -231,8 +231,8 @@ sub run($$)
 	my $deparse = B::DeparseTree->new("-p", "-sC");
 	if ($addr) {
 	    if ($funcname eq "DB::DB") {
+		$deparse->coderef2list(\&main::main);
 		$proc->errmsg("Can't figure out how to deparse main yet");
-		# $deparse->coderef2list(\&main::main);
 		return;
 	    } else {
 		$deparse->coderef2list(\&$funcname);

@@ -1,4 +1,7 @@
-# Basic test of disassemble.
-# Use with example/five.pm
-deparse -no-highlight five
-quit!
+-- main::(five.pl:4)
+my $x = "Something simple to demo 'deparse'";
+package main::five;
+sub five{
+    5;
+}
+trepan.pl: That's all, folks...

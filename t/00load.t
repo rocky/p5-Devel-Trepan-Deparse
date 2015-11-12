@@ -5,11 +5,11 @@ use lib '../lib';
 use blib;
 
 use Test::More tests => 2;
-note( "Testing Device::Trepan::Disassemble $Devel::Trepan::Disassemble::VERSION" );
+note( "Testing Devel::Trepan::Deparse $Devel::Trepan::Deparse::VERSION" );
 
 BEGIN {
-use_ok( 'Devel::Trepan::Disassemble' );
+use_ok( 'Devel::Trepan::Deparse' );
 }
 
-ok(defined($Devel::Trepan::Disassemble::VERSION), 
-   "\$Devel::Trepan::Shell::Disassemble number is set");
+ok(defined($Devel::Trepan::Deparse::VERSION),
+   "\$Devel::Trepan::Deparse number is set");

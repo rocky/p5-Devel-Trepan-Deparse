@@ -7,11 +7,11 @@ use warnings; no warnings 'redefine';
 use English qw( -no_match_vars );
 use B;
 use B::DeparseTree;
-use B::DeparseTree::Printer;
+use B::DeparseTree::Printer qw(short_str);
 
 package Devel::Trepan::CmdProcessor::Command::Deparse;
 use English qw( -no_match_vars );
-use Devel::Trepan::DB::LineCache;
+use Devel::Trepan::DB::LineCache qs(highlight_string);
 use Devel::Trepan::CmdProcessor::Validate;
 use Getopt::Long qw(GetOptionsFromArray);
 
@@ -155,12 +155,12 @@ sub get_prev_addr($$) {
 }
 
 # Print Perl text, possibly syntax highlighted.
-sub pmsg($$)
+sub pmsg($$$)
 {
     my ($proc, $text,$short) = @_;
-    $text = Devel::Trepan::DB::LineCache::highlight_string($text) if $proc->{settings}{highlight};
     $text = B::DeparseTree::Printer::short_str($text, $proc->{settings}{maxwidth}) if $short;
-    $proc->msg($text);
+    $text = highlight_string($text) if $proc->{settings}{highlight};
+    $proc->msg($text, {unlimited => 1});
 }
 
 # Print Perl text, possibly syntax highlighted.
@@ -171,7 +171,6 @@ sub pmsg_info($$$$)
     my ($proc, $options, $leader, $info) = @_;
     return unless $info;
     my $text = $info->{text};
-    $text = Devel::Trepan::DB::LineCache::highlight_string($text) if $proc->{settings}{highlight};
     if (grep($_ eq '-a', @{$options})) {
 	$leader = sprintf "OP: 0x%0x $leader", ${$info->{op}};
     }
@@ -229,7 +228,7 @@ sub run($$)
     my $text;
     # FIXME: we assume func below, add parse options like filename, and
     if ($want_runtime_position) {
-	my $deparse = B::DeparseTree->new("-p", "-sC");
+	my $deparse = B::DeparseTree->new("-sC");
 	if ($addr) {
 	    if ($funcname eq "DB::DB") {
 		$deparse->coderef2list(\&main::main);

@@ -7,11 +7,11 @@ use warnings; no warnings 'redefine';
 use English qw( -no_match_vars );
 use B;
 use B::DeparseTree;
-use B::DeparseTree::Printer qw(short_str);
+use B::DeparseTree::Printer; # qw(short_str);
 
 package Devel::Trepan::CmdProcessor::Command::Deparse;
 use English qw( -no_match_vars );
-use Devel::Trepan::DB::LineCache qs(highlight_string);
+use Devel::Trepan::DB::LineCache qw(highlight_string);
 use Devel::Trepan::CmdProcessor::Validate;
 use Getopt::Long qw(GetOptionsFromArray);
 
@@ -92,7 +92,7 @@ sub complete($$)
     my $filename = $self->{proc}->filename;
     # For line numbers we'll use stoppable line number even though one
     # can enter line numbers that don't have breakpoints associated with them
-    my @completions = sort(file_list, DB::subs());
+    my @completions = sort DB::subs();
     Devel::Trepan::Complete::complete_token(\@completions, $prefix);
 }
 
@@ -109,6 +109,23 @@ sub parse_options($$)
 			     '-q'  => sub {push(@opts, '-q') }
         );
     @opts;
+}
+
+# Elide string with ... if it is too long, and
+# show control characters in string.
+sub short_str($;$) {
+    my ($str, $maxwidth) = @_;
+    $maxwidth ||= 20;
+
+    if (length($str) > $maxwidth) {
+	my $chop = $maxwidth - 3;
+	$str = substr($str, 0, $chop) . '...' . substr($str, -$chop);
+    }
+    $str =~ s/\cK/\\cK/g;
+    $str =~ s/\f/\\f/g;
+    $str =~ s/\n/\\n/g;
+    $str =~ s/\t/\\t/g;
+    return $str
 }
 
 sub address_options($$$)

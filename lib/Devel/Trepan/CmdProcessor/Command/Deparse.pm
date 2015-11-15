@@ -329,7 +329,7 @@ unless (caller) {
     my $cmd = __PACKAGE__->new($proc);
     require Devel::Trepan::DB::Sub;
     require Devel::Trepan::DB::LineCache;
-    cache_file(__FILE__);
+    # cache_file(__FILE__);
     my $root_cv = B::main_root;
     $proc->{frame} = {
 	line => __LINE__ - 1,

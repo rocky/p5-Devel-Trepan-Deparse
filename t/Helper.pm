@@ -46,7 +46,7 @@ sub prog_file(;$)
 sub run_debugger($$$;$$)
 {
     my ($test_invoke, $cmddir, $cmd_filename, $right_filename, $opts) = @_;
-    my $full_cmd_filename = File::Spec->catfile(dirname(__FILE__), 
+    my $full_cmd_filename = File::Spec->catfile(dirname(__FILE__),
 						'data', $cmd_filename);
 
     my $ext_file = sub {
@@ -69,7 +69,7 @@ sub run_debugger($$$;$$)
     my $cmd = "$EXECUTABLE_NAME -d:Trepan $test_invoke";
     Test::More::note( "running $cmd" );
     if ($debug) {
-	print Data::Dumper::Dumper($run_opts), "\n"; 
+	print Data::Dumper::Dumper($run_opts), "\n";
 	print $cmd, "\n"  if $debug;
     }
     my $output = `$cmd`;
@@ -82,14 +82,14 @@ sub run_debugger($$$;$$)
     open(RIGHT_FH, "<$right_filename");
     undef $INPUT_RECORD_SEPARATOR;
     my $right_string = <RIGHT_FH>;
-    ($output, $right_string) = $opts->{filter}->($output, $right_string) 
+    ($output, $right_string) = $opts->{filter}->($output, $right_string)
 	if $opts->{filter};
     my $got_filename;
     $got_filename = $ext_file->('got');
-    # TODO : Perhaps make sure we optionally use eq_or_diff from 
+    # TODO : Perhaps make sure we optionally use eq_or_diff from
     # Test::Differences here.
     my $equal_output = $right_string eq $output;
-    Test::More::ok($right_string eq $output, 'Output comparison') 
+    Test::More::ok($right_string eq $output, 'Output comparison')
 	if $opts->{do_test};
     if ($equal_output) {
         unlink $got_filename;
@@ -107,7 +107,7 @@ sub run_debugger($$$;$$)
 	# case where diff isn't installed. So although we expect a 1
 	# for GNU diff, we'll also take accept 0, but any other return
 	# code means some sort of failure.
-	$output = `diff $right_filename $got_filename 2>&1` 
+	$output = `diff $right_filename $got_filename 2>&1`
 	     if ($rc > 1) || ($rc < 0) ;
         Test::More::diag($output);
 	return 1;

@@ -11,7 +11,7 @@ use B::DeparseTree::Printer; # qw(short_str);
 
 package Devel::Trepan::CmdProcessor::Command::Deparse;
 use English qw( -no_match_vars );
-use Devel::Trepan::DB::LineCache qw(highlight_string);
+use Devel::Trepan::DB::LineCache;
 use Devel::Trepan::CmdProcessor::Validate;
 use Getopt::Long qw(GetOptionsFromArray);
 
@@ -176,7 +176,8 @@ sub pmsg($$$)
 {
     my ($proc, $text,$short) = @_;
     $text = B::DeparseTree::Printer::short_str($text, $proc->{settings}{maxwidth}) if $short;
-    $text = highlight_string($text) if $proc->{settings}{highlight};
+    $text = Devel::Trepan::DB::LineCache::highlight_string($text)
+	if $proc->{settings}{highlight};
     $proc->msg($text, {unlimited => 1});
 }
 

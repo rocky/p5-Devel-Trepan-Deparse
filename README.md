@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/rocky/p5-Devel-Trepan-Deparfse.png)](https://travis-ci.org/rocky/p5-Devel-Trepan-Deparse)
+[![Build Status](https://travis-ci.org/rocky/p5-Devel-Trepan-Deparse.png)](https://travis-ci.org/rocky/p5-Devel-Trepan-Deparse)
 
 Synopsis
 --------

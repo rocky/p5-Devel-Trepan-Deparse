@@ -12,7 +12,6 @@ use B::DeparseTree::Printer; # qw(short_str);
 package Devel::Trepan::CmdProcessor::Command::Deparse;
 use English qw( -no_match_vars );
 use Devel::Trepan::DB::LineCache;
-use Devel::Trepan::CmdProcessor::Validate;
 use Getopt::Long qw(GetOptionsFromArray);
 
 use constant CATEGORY   => 'data';
@@ -146,7 +145,7 @@ sub get_addr($$)
     my $op_info = $deparse->{optree}{$addr};
     if ($op_info) {
 	# use Data::Printer; Data::Printer::p $op_info;
-	my $text = $deparse->indent_info($op_info);
+	# my $text = $deparse->indent_info($op_info);
 	return $op_info;
     }
     return undef;
@@ -246,10 +245,10 @@ sub run($$)
     my $text;
     # FIXME: we assume func below, add parse options like filename, and
     if ($want_runtime_position) {
-	my $deparse = B::DeparseTree->new("-sC");
+	my $deparse = B::DeparseTree->new();
 	if ($addr) {
 	    if ($funcname eq "DB::DB") {
-		$deparse->coderef2list(\&main::main);
+		# $deparse->coderef2list(\&main::main);
 		$proc->errmsg("Can't figure out how to deparse main yet");
 		return;
 	    } else {

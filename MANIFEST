@@ -21,3 +21,4 @@ t/data/deparse.cmd
 t/data/deparse.right
 META.yml
 META.json
+Makefile.PL

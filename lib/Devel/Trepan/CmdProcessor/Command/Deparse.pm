@@ -270,7 +270,7 @@ sub run($$)
 		return;
 	    } else {
 		$proc->errmsg(sprintf("Can't find info for op at 0x%x", $addr));
-		use Data::Printer; Data::Printer::p $deparse->{optree};
+		# use Data::Printer; Data::Printer::p $deparse->{optree};
 	    }
 	    return;
 	} elsif (scalar @args >= 1 and ($args[0]) =~ /^0x/) {

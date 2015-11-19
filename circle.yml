@@ -1,0 +1,8 @@
+checkout:
+  post:
+    - sudo cpan Devel::Trepan
+
+test:
+  override:
+    - perl ./Build.PL
+    - make check

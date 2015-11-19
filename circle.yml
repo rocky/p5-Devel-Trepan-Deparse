@@ -1,6 +1,6 @@
 checkout:
   post:
-    - sudo cpan Devel::Trepan
+    - sudo cpanm Devel::Trepan
 
 test:
   override:

@@ -4,6 +4,7 @@ Changes
 ChangeLog
 GNUmakefile
 MANIFEST			This list of files
+NEWS
 README.md			README in Markdown format for github
 example/five.pl
 gpl-2.0.txt

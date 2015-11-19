@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 # Copyright (C) 2015 Rocky Bernstein <rocky@cpan.org>
 package Devel::Trepan::Deparse;
-our $VERSION='2.0.0';
+our $VERSION='2.1.0';
 "All of the real action is in Devel::Trepan::CmdProcessor::Command::Deparse.pm";
 __END__
 
@@ -25,7 +25,9 @@ Perl Deparse plugin for L<Devel::Trepan> via L<B::DeparseTree>
 
 =head1 SUMMARY
 
-This adds a I<deparse> command to the L<Devel::Trepan> debugger.
+This adds I<deparse> and I<deval> commands to the L<Devel::Trepan>
+debugger; I<deparse> deparses Perl code; I<deval> evaluates deparsed
+perl at the current point.
 
 =head1 DESCRIPTION
 

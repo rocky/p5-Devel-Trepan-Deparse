@@ -1,0 +1,6 @@
+2.1.0
+
+- Be able to deparse main::. (requires DeparseTree 2.1.0)
+
+2.0.0
+- Initial release

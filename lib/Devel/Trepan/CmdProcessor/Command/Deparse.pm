@@ -248,9 +248,7 @@ sub run($$)
 	my $deparse = B::DeparseTree->new();
 	if ($addr) {
 	    if ($funcname eq "DB::DB") {
-		# $deparse->coderef2list(\&main::main);
-		$proc->errmsg("Can't figure out how to deparse main yet");
-		return;
+		$deparse->main2info;
 	    } else {
 		$deparse->coderef2list(\&$funcname);
 	    }
@@ -272,6 +270,7 @@ sub run($$)
 		return;
 	    } else {
 		$proc->errmsg(sprintf("Can't find info for op at 0x%x", $addr));
+		use Data::Printer; Data::Printer::p $deparse->{optree};
 	    }
 	    return;
 	} elsif (scalar @args >= 1 and ($args[0]) =~ /^0x/) {

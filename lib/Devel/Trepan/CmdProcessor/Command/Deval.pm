@@ -65,15 +65,14 @@ sub run($$)
 	return;
     }
     my $funcname = $proc->{frame}{fn};
-    if ($funcname eq "DB::DB" or $proc->{stack_size} <= 0) {
-	# $deparse->coderef2list(\&main::main);
-	$proc->errmsg("Can't figure out how to deparse main or top-level code yet");
-	return;
-    }
-    my $addr = $proc->{op_addr};
-    # Pick up string to eval from current source address.
     my $deparse = B::DeparseTree->new();
-    $deparse->coderef2list(\&$funcname);
+    my $addr = $proc->{op_addr};
+    if ($funcname eq "DB::DB" or $proc->{stack_size} <= 0) {
+	$deparse->main2info;
+    } else {
+	# Pick up string to eval from current source address.
+	$deparse->coderef2info(\&$funcname);
+    }
     my $op_info = Devel::Trepan::CmdProcessor::Command::Deparse::get_addr($deparse, $addr);
     unless ($op_info) {
 	my $mess = sprintf("Can't get info for address 0x%x", $addr);

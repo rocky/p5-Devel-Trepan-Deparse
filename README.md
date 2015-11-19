@@ -1,8 +1,3 @@
-[![Build Status](https://travis-ci.org/rocky/p5-Devel-Trepan-Deparse.png)](https://travis-ci.org/rocky/p5-Devel-Trepan-Deparse)
-
-Synopsis
---------
-
 Adds a "deparse" command to [`Devel::Trepan`](https://github.com/rocky/Perl-Devel-Trepan/wiki).
 
 This can tell you exactly where you are stopped. We rely on _B::DeparseTree_ and currently this works on Perl 5.20 and 5.22.

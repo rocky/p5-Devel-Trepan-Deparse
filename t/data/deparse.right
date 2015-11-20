@@ -8,8 +8,6 @@ package main::five;
 sub five{
     5;
 }
--> main::(five.pl:1 @0x1234567)
-sub five {
 x1 main::(five.pl:2 @0x1234567)
     5;
 # code to be run next...

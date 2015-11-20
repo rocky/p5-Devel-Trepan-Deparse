@@ -2,7 +2,6 @@
 # Use with example/five.pl
 deparse
 deparse five
-continue five
-step
+continue 2
 deparse
 quit!

@@ -2,7 +2,7 @@
 
 Adds a "deparse" command to [`Devel::Trepan`](https://github.com/rocky/Perl-Devel-Trepan/wiki).
 
-This can tell you exactly where you are stopped. We rely on _B::DeparseTree_ and currently this works on Perl 5.20 and 5.22.
+This can tell you exactly where you are stopped. We rely on _B::DeparseTree_ and currently this works on Perl 5.18, 5.20 and 5.22.
 
 Installation
 ------------

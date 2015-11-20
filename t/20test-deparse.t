@@ -30,7 +30,8 @@ my $opts = {
 	for my $line (split(/\n/, $got_lines)) {
 	    $line =~ s/(^    [A-Z]+) \(0x[a-f0-9]+\)/$1 (0x1234567)/;
 	    $line =~ s/(^=>  [A-Z]+) \(0x[a-f0-9]+\)/$1 (0x1234567)/;
-	    $line =~ s/^-- main::\((.+) \@0x[a-f0-9]+\)/-- main::($1)/;
+	    $line =~ s{^(..) main::\((.+) \@0x([a-f0-9]+)\)}
+                      {$1 main::($2 \@0x1234567)};
             # use Enbugger; Enbugger->load_debugger('trepan');
 	    # Enbugger->stop() if $line =~ /^op_first/;
 	    $line =~ s/^    \top_(first|last|next|sibling|sv)(\s+)(0x[a-f0-9]+)/    \top_$1${2}0x7654321/;
@@ -52,5 +53,5 @@ my $test_prog = File::Spec->catfile(dirname(__FILE__),
 				    qw(.. example five.pl));
 my $ok = Helper::run_debugger("$test_prog", $TREPAN_DIR,
 			      'deparse.cmd', undef, $opts);
-is $ok, 0;
+is $ok, 0, "Exit code zero";
 done_testing;

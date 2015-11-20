@@ -68,10 +68,11 @@ Without arguments, deparses the current statement, if we can.
 
 =head2 Examples:
 
-  deparse            # deparse current statement
-  deparse -a         # deparse current statement showing
-                     # line and OP address
-  deparse 0xcafebabe # decode an opcode address.
+  deparse             # deparse current statement
+  deparse -a          # deparse current statement showing
+                      # line and OP address
+  deparse 0xcafebabe  # decode an opcode address.
+  deparse @0xcafebabe # same as above
   deparse file.pm
   deparse -l file.pm
 
@@ -217,8 +218,9 @@ sub run($$)
 	    $addr = $proc->{op_addr};
 	}
     } elsif (scalar @args <= 2) {
-	if ($args[0] =~ /^0x/) {
+	if ($args[0] =~ /^@?(0x[0-9a-fA-F]+)/) {
 	    $want_runtime_position = 1;
+	    $addr = hex($1);
 	} elsif ($args[0] eq '.') {
 	    $want_runtime_position = 1;
 	    $addr = $proc->{op_addr};
@@ -250,7 +252,7 @@ sub run($$)
 	    if ($funcname eq "DB::DB") {
 		$deparse->main2info;
 	    } else {
-		$deparse->coderef2list(\&$funcname);
+		$deparse->coderef2info(\&$funcname);
 	    }
 	    my ($op_info) = get_addr($deparse, $addr);
 	    if ($op_info) {
@@ -262,8 +264,11 @@ sub run($$)
 				$op_info);
 		    pmsg_info($proc, \@options, 'contained in', $parent_info);
 		} else {
-		    pmsg_info($proc, \@options, 'code to be run next',
-			      $op_info);
+		    my $mess =
+			($proc->{op_addr} && $addr == $proc->{op_addr}) ?
+			'code to be run next' :
+			sprintf("code at address 0x%x", $addr);
+		    pmsg_info($proc, \@options, $mess, $op_info);
 		    pmsg_info($proc, \@options, 'contained in', $parent_info);
 		}
 		address_options($proc, $op_info, $args[1]) if $args[1];
@@ -273,10 +278,10 @@ sub run($$)
 		# use Data::Printer; Data::Printer::p $deparse->{optree};
 	    }
 	    return;
-	} elsif (scalar @args >= 1 and ($args[0]) =~ /^0x/) {
-	    my $addr = $args[0];
+	} elsif (scalar @args >= 1 and ($args[0]) =~ /^@?(0x[0-9a-fA-F]+)/) {
+	    my $addr = hex($1);
 	    my $coderef = \&$funcname;
-	    my $info = $deparse->coderef2list($coderef);
+	    my $info = $deparse->coderef2info($coderef);
 	    my ($op_info, $mess) = get_addr($deparse, hex($addr));
 	    if ($op_info) {
 		if (scalar(@args) == 2 ) {

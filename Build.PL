@@ -48,15 +48,15 @@ my $builder = Module::Build->new(
     },
 
     configure_requires  => {
-	'Module::Build' => '0.32',
+	'Module::Build' => '0.4214',
     },
     test_requires  => {
         'Test::Simple'                      => '0.81',
         'rlib'                              => '0.02',
     },
     requires => {
-	'perl'                              => '5.020000',
-	'Devel::Trepan'                     => '0.70',
+	'perl'                              => '5.018000',
+	'Devel::Trepan'                     => '0.71',
         'rlib'                              => '0.02',
         'B::DeparseTree'                    => '2.1.0',
     },

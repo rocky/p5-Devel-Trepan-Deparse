@@ -10,6 +10,8 @@ gpl-2.0.txt
 example/fib.pl
 example/multiline.pl
 lib/Devel/Trepan/CmdProcessor/Command/Deparse.pm
+lib/Devel/Trepan/CmdProcessor/Command/Set_Subcmd/Auto_Subcmd/Deparse.pm
+lib/Devel/Trepan/CmdProcessor/Command/Show_Subcmd/Auto_Subcmd/Deparse.pm
 lib/Devel/Trepan/Deparse.pm
 t/00load.t
 t/00test-pod.t

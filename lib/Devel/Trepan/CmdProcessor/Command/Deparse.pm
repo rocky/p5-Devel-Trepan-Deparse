@@ -39,6 +39,7 @@ our $HELP = <<'HELP';
 =pod
 
 B<deparse> [I<address options>] [0xOP-address | . ]  [dump | tree]
+
 B<deparse> [I<B::DeparseTree-options>] {I<filename> | I<subroutine>}
 
 In the first form with an OP address, "," or no arguments, deparse

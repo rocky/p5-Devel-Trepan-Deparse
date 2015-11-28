@@ -31,7 +31,7 @@ Perl at the current point in the Perl program that you are stopped at.
 
 =head1 DESCRIPTION
 
-Perl reports location only at the granularity of a line number. Sometime you would like better or more precise information. For example suppose I am stopped on this line taken from I<File::Basename::fileparse>:
+Perl reports location only at the granularity of a line number. Sometimes you would like better or more precise information. For example suppose I am stopped on this line taken from I<File::Basename::fileparse>:
 
      if (grep { $type eq $_ } qw(MSDOS DOS MSWin32 Epoc)) {  # ...
 

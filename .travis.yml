@@ -9,6 +9,7 @@ after_failure:
   - cat /home/travis/.cpanm/work/*/build.log
 
 install:
+  - cpanm CPAN
   # Prerequisites
   - cpanm LEONT/Module-Build-0.4224.tar.gz
   - perl ./Build.PL

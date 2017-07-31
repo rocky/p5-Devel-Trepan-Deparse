@@ -3,7 +3,7 @@ language: perl
 sudo: false
 
 env:
-  - AUTOMATED_TESTING=1 PREREQS="Devel::Trepan B::DeparseTree Devel::Callsite"
+  - PREREQS="Devel::Trepan B::DeparseTree Devel::Callsite"
 
 after_failure:
   - cat /home/travis/.cpanm/work/*/build.log
@@ -12,7 +12,7 @@ install:
   # Prerequisites
   - cpanm LEONT/Module-Build-0.4224.tar.gz
   - perl ./Build.PL
-  - cpanm --installdeps --notest .
+  - AUTOMATED_TESTING=1 cpanm --installdeps --notest .
   - GIT2CL='./git2cl' make ChangeLog distmeta distcheck
 
 perl:

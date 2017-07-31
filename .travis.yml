@@ -12,7 +12,7 @@ install:
   # Prerequisites
   - cpanm LEONT/Module-Build-0.4224.tar.gz
   - perl ./Build.PL
-  - cpanm --quiet --installdeps --notest .
+  - cpanm --installdeps --notest .
   - GIT2CL='./git2cl' make ChangeLog distmeta distcheck
 
 perl:

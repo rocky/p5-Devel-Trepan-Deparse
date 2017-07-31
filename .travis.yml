@@ -9,12 +9,10 @@ after_failure:
   - cat /home/travis/.cpanm/work/*/build.log
 
 install:
-  - cpanm CPAN
   # Prerequisites
   - cpanm LEONT/Module-Build-0.4224.tar.gz
   - perl ./Build.PL
-  # Devel::Trepan might fail, but ignore that; if there is a serious problem, catch later
-  - ./Build installdeps || true
+  - cpanm --quiet --installdeps --notest .
   - GIT2CL='./git2cl' make ChangeLog distmeta distcheck
 
 perl:

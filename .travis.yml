@@ -10,9 +10,14 @@ after_failure:
 
 install:
   # Prerequisites
-  - "cpanm $PREREQS"
+  - cpanm LEONT/Module-Build-0.4224.tar.gz
+  - perl ./Build.PL
+  # Devel::Trepan might fail, but ignore that; if there is a serious problem, catch later
+  - ./Build installdeps || true
+  - GIT2CL='./git2cl' make ChangeLog distmeta distcheck
 
 perl:
+  - "5.18"
   - "5.20"
   - "5.22"
   - "5.24"

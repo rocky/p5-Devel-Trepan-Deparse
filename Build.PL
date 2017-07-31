@@ -57,7 +57,7 @@ my $builder = Module::Build->new(
     requires => {
 	'perl'                              => '5.018000',
         'Devel::Callsite'                   => '0.08',
-	'Devel::Trepan'                     => '0.74',
+	'Devel::Trepan'                     => '0.73',
         'rlib'                              => '0.02',
         'B::DeparseTree'                    => '2.1.0',
     },

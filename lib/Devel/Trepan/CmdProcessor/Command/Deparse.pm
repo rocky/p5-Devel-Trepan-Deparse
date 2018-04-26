@@ -5,11 +5,9 @@ use rlib '../../../..';
 
 
 use warnings; no warnings 'redefine';
-use English qw( -no_match_vars );
 use B;
 use B::DeparseTree;
 use B::DeparseTree::Printer; # qw(short_str);
-use Devel::Trepan::DB::LineCache;
 
 package Devel::Trepan::CmdProcessor::Command::Deparse;
 
@@ -18,6 +16,7 @@ use Getopt::Long qw(GetOptionsFromArray);
 Getopt::Long::Configure("pass_through");
 
 use Devel::Trepan::Deparse;
+use Devel::Trepan::DB::LineCache;
 
 use constant CATEGORY   => 'data';
 use constant SHORT_HELP => 'Deparse source code via B::DeparseTree';

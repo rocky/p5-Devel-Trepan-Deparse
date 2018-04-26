@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# Copyright (C) 2015 Rocky Bernstein <rocky@cpan.org>
+# Copyright (C) 2015, 2018 Rocky Bernstein <rocky@cpan.org>
 package Devel::Trepan::Deparse;
 our $VERSION='2.2.0';
 "All of the real action is in Devel::Trepan::CmdProcessor::Command::Deparse.pm";
@@ -72,7 +72,7 @@ Rocky Bernstein
 
 =head1 COPYRIGHT
 
-Copyright (C) 2015 Rocky Bernstein <rocky@cpan.org>
+Copyright (C) 2015, 2018 Rocky Bernstein <rocky@cpan.org>
 
 This program is distributed WITHOUT ANY WARRANTY, including but not
 limited to the implied warranties of merchantability or fitness for a

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014-2015 Rocky Bernstein <rocky@cpan.org>
+# Copyright (C) 2014-2015, 2018 Rocky Bernstein <rocky@cpan.org>
 
 use rlib '../../../..';
+use Exporter;
 
 use warnings; no warnings 'redefine';
 use English qw( -no_match_vars );
@@ -22,12 +23,13 @@ use constant NEED_STACK => 0;
 
 
 use Devel::Trepan::CmdProcessor::Command qw(@CMD_ISA @CMD_VARS set_name);
-use vars qw(@ISA);
 
 use strict;
 
-use vars qw(@ISA); @ISA = @CMD_ISA;
+use vars qw(@ISA @EXPORT);
 @ISA = qw(Devel::Trepan::CmdProcessor::Command);
+push @ISA, 'Exporter';
+@EXPORT = qw(pmsg pmsg_info deparse_offset get_prev_addr);
 
 use vars @CMD_VARS;  # Value inherited from parent
 
@@ -53,14 +55,11 @@ shows information for that file or function.
 
 B::DeparseTree options:
 
-    -d  Output data values using Data::Dumper
-    -l  Add '# line' comment
-    -a  Add 'OP addresses in '# line' comment
-    -P  Disable prototype checking
-    -q  Expand double-quoted strings
-
-Options
-
+    -d  | --dumper  Output data values using Data::Dumper
+    -l  | --line    Add '# line' comment
+    -a  | --address Add 'OP addresses in '# line' comment
+    -P  | --parent  Disable prototype checking
+    -q  | --quote   Expand double-quoted strings
 
 
 Deparse Perl source code using L<B::DeparseTree>.
@@ -97,17 +96,31 @@ sub complete($$)
     Devel::Trepan::Complete::complete_token(\@completions, $prefix);
 }
 
+sub deparse_offset($$)
+{
+    my ($funcname, $address) = @_;
+
+    my $deparse = B::DeparseTree->new();
+    if ($funcname eq "DB::DB") {
+	$deparse->main2info;
+    } else {
+	$deparse->coderef2info(\&$funcname);
+    }
+    get_addr($deparse, $address);
+}
+
 sub parse_options($$)
 {
     my ($self, $args) = @_;
+    $Getopt::Long::autoabbrev = 1;
     my @opts = ();
     my $result =
 	&GetOptionsFromArray($args,
-			     '-d'  => sub {push(@opts, '-d') },
-			     '-l'  => sub {push(@opts, '-l') },
-			     '-P'  => sub {push(@opts, '-P') },
-			     '-a'  => sub {push(@opts, '-a') },
-			     '-q'  => sub {push(@opts, '-q') }
+			     'd|dumper'  => sub {push(@opts, '-d') },
+			     'l|line'    => sub {push(@opts, '-l') },
+			     'P|parent'  => sub {push(@opts, '-P') },
+			     'a|address' => sub {push(@opts, '-a') },
+			     'q|quote'   => sub {push(@opts, '-q') }
         );
     @opts;
 }
@@ -248,16 +261,16 @@ sub run($$)
     my $text;
     # FIXME: we assume func below, add parse options like filename, and
     if ($want_runtime_position) {
+	# FIXME: ideally $deparse would be internal only to deparse_offset
+	# However some branches need $deparse is used for other purposes
+	# rather than duplicate this code, it is here once, on the
+	# most likely branches it is not used.
 	my $deparse = B::DeparseTree->new();
+
 	if ($addr) {
-	    if ($funcname eq "DB::DB") {
-		$deparse->main2info;
-	    } else {
-		$deparse->coderef2info(\&$funcname);
-	    }
-	    my ($op_info) = get_addr($deparse, $addr);
+	    my $op_info = deparse_offset($funcname, $addr);
 	    if ($op_info) {
-		my $parent_info = get_addr($deparse, $op_info->{parent});
+		my $parent_info = deparse_offset($funcname, $op_info->{parent});
 		if ($want_prev_position) {
 		    my $prev_info = get_prev_addr($deparse, $op_info);
 		    pmsg_info($proc, \@options, "called location", $prev_info);
@@ -281,14 +294,12 @@ sub run($$)
 	    return;
 	} elsif (scalar @args >= 1 and ($args[0]) =~ /^@?(0x[0-9a-fA-F]+)/) {
 	    my $addr = hex($1);
-	    my $coderef = \&$funcname;
-	    my $info = $deparse->coderef2info($coderef);
-	    my ($op_info, $mess) = get_addr($deparse, hex($addr));
+	    my ($op_info) = deparse_offset($funcname, $addr);
 	    if ($op_info) {
 		if (scalar(@args) == 2 ) {
 		    address_options($proc, $op_info, $args[1])
 		} else {
-		    my $parent_info = get_addr($deparse, $op_info->{parent});
+		    my $parent_info = deparse_offset($funcname, $op_info->{parent});
 		    if ($parent_info) {
 			pmsg_info($proc, \@options, '', $op_info);
 			pmsg_info($proc, \@options, ' contained in', $parent_info);

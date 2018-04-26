@@ -2,18 +2,20 @@
 # Copyright (C) 2014-2015, 2018 Rocky Bernstein <rocky@cpan.org>
 
 use rlib '../../../..';
-use Exporter;
+
 
 use warnings; no warnings 'redefine';
 use English qw( -no_match_vars );
 use B;
 use B::DeparseTree;
 use B::DeparseTree::Printer; # qw(short_str);
+use Devel::Trepan::DB::LineCache;
 
 package Devel::Trepan::CmdProcessor::Command::Deparse;
+
 use English qw( -no_match_vars );
-use Devel::Trepan::DB::LineCache;
 use Getopt::Long qw(GetOptionsFromArray);
+use Devel::Trepan::Deparse;
 
 use constant CATEGORY   => 'data';
 use constant SHORT_HELP => 'Deparse source code via B::DeparseTree';
@@ -96,19 +98,6 @@ sub complete($$)
     Devel::Trepan::Complete::complete_token(\@completions, $prefix);
 }
 
-sub deparse_offset($$)
-{
-    my ($funcname, $address) = @_;
-
-    my $deparse = B::DeparseTree->new();
-    if ($funcname eq "DB::DB") {
-	$deparse->main2info;
-    } else {
-	$deparse->coderef2info(\&$funcname);
-    }
-    get_addr($deparse, $address);
-}
-
 sub parse_options($$)
 {
     my ($self, $args) = @_;
@@ -151,63 +140,6 @@ sub address_options($$$)
 	$proc->msg(B::DeparseTree::Printer::format_info_walk($op_info, 0));
     }
 
-}
-
-sub get_addr($$)
-{
-    my ($deparse, $addr) = @_;
-    return unless $addr;
-    my $op_info = $deparse->{optree}{$addr};
-    if ($op_info) {
-	# use Data::Printer; Data::Printer::p $op_info;
-	# my $text = $deparse->indent_info($op_info);
-	return $op_info;
-    }
-    return undef;
-}
-
-sub get_prev_addr($$);
-
-sub get_prev_addr($$) {
-    my ($deparse, $op_info) = @_;
-
-    return undef unless $op_info && $op_info->{parent};
-    my $parent_addr = $op_info->{parent};
-    my $parent_info = $deparse->{optree}{$parent_addr};
-    return undef unless $parent_info;
-    my @body = @{$parent_info->{body}};
-    return undef unless @body;
-    my $prev_info = shift @body;
-    while (@body) {
-	return $prev_info if ($body[0] == $op_info);
-	$prev_info = shift @body;
-    }
-    return undef;
-}
-
-# Print Perl text, possibly syntax highlighted.
-sub pmsg($$$)
-{
-    my ($proc, $text,$short) = @_;
-    $text = B::DeparseTree::Printer::short_str($text, $proc->{settings}{maxwidth}) if $short;
-    $text = Devel::Trepan::DB::LineCache::highlight_string($text)
-	if $proc->{settings}{highlight};
-    $proc->msg($text, {unlimited => 1});
-}
-
-# Print Perl text, possibly syntax highlighted.
-# We add leader info which may have op addresses
-# if desired
-sub pmsg_info($$$$)
-{
-    my ($proc, $options, $leader, $info) = @_;
-    return unless $info;
-    my $text = $info->{text};
-    if (grep($_ eq '-a', @{$options})) {
-	$leader = sprintf "OP: 0x%0x $leader", ${$info->{op}};
-    }
-    $proc->msg("# ${leader}...") if $leader;
-    pmsg($proc, $text, 1);
 }
 
 # This method runs the command

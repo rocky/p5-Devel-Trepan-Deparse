@@ -15,6 +15,8 @@ package Devel::Trepan::CmdProcessor::Command::Deparse;
 
 use English qw( -no_match_vars );
 use Getopt::Long qw(GetOptionsFromArray);
+Getopt::Long::Configure("pass_through");
+
 use Devel::Trepan::Deparse;
 
 use constant CATEGORY   => 'data';
@@ -62,6 +64,7 @@ B::DeparseTree options:
     -a  | --address Add 'OP addresses in '# line' comment
     -P  | --parent  Disable prototype checking
     -q  | --quote   Expand double-quoted strings
+    -h  | --help    run 'help deparse' (this text)
 
 
 Deparse Perl source code using L<B::DeparseTree>.
@@ -105,6 +108,7 @@ sub parse_options($$)
     my @opts = ();
     my $result =
 	&GetOptionsFromArray($args,
+			     'h|help'    => sub {@opts = ('help') },
 			     'd|dumper'  => sub {push(@opts, '-d') },
 			     'l|line'    => sub {push(@opts, '-l') },
 			     'P|parent'  => sub {push(@opts, '-P') },
@@ -149,7 +153,14 @@ sub run($$)
     my @args     = @$args;
     @args = splice(@args, 1, scalar(@args), -2);
     my @options = parse_options($self, \@args);
+
     my $proc     = $self->{proc};
+    if (@options eq ('help')) {
+	my $help_cmd = $proc->{commands}{help};
+	$help_cmd->run( ['help', 'deparse'] );
+	return;
+    };
+
     my $filename = $proc->{list_filename};
     my $frame    = $proc->{frame};
     my $funcname = $proc->{frame}{fn};

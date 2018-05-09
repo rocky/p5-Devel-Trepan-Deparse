@@ -1,61 +1,18 @@
 #!/usr/bin/env perl
 # Copyright (C) 2015, 2018 Rocky Bernstein <rocky@cpan.org>
 package Devel::Trepan::Deparse;
-our $VERSION='2.2.0';
-1;
+our $VERSION='3.0.0';
 use Exporter;
+use warnings; use strict;
 
 use vars qw(@ISA @EXPORT);
 @ISA = ('Exporter');
-@EXPORT = qw(deparse_offset get_addr get_prev_addr pmsg pmsg_info);
-
-sub deparse_offset
-{
-    my ($funcname, $address) = @_;
-
-    my $deparse = B::DeparseTree->new();
-    if ($funcname eq "DB::DB") {
-	$deparse->main2info;
-    } else {
-	$deparse->coderef2info(\&$funcname);
-    }
-    get_addr($deparse, $address);
-}
-
-sub get_addr
-{
-    my ($deparse, $addr) = @_;
-    return unless $addr;
-    my $op_info = $deparse->{optree}{$addr};
-    if ($op_info) {
-	# use Data::Printer; Data::Printer::p $op_info;
-	# my $text = $deparse->indent_info($op_info);
-	return $op_info;
-    }
-    return undef;
-}
-
-sub get_prev_addr {
-    my ($deparse, $op_info) = @_;
-
-    return undef unless $op_info && $op_info->{parent};
-    my $parent_addr = $op_info->{parent};
-    my $parent_info = $deparse->{optree}{$parent_addr};
-    return undef unless $parent_info;
-    my @body = @{$parent_info->{body}};
-    return undef unless @body;
-    my $prev_info = shift @body;
-    while (@body) {
-	return $prev_info if ($body[0] == $op_info);
-	$prev_info = shift @body;
-    }
-    return undef;
-}
+@EXPORT = qw(pmsg pmsg_info);
 
 # Print Perl text, possibly syntax highlighted.
 sub pmsg
 {
-    my ($proc, $text,$short) = @_;
+    my ($proc, $text, $short) = @_;
     $text = B::DeparseTree::Printer::short_str($text, $proc->{settings}{maxwidth}) if $short;
     $text = Devel::Trepan::DB::LineCache::highlight_string($text)
 	if $proc->{settings}{highlight};
@@ -77,6 +34,8 @@ sub pmsg_info
     pmsg($proc, $text, 1);
 }
 
+
+1;
 
 __END__
 

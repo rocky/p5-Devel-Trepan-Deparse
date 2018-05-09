@@ -11,10 +11,12 @@ use B::DeparseTree::Printer; # qw(short_str);
 
 package Devel::Trepan::CmdProcessor::Command::Deparse;
 
+
 use English qw( -no_match_vars );
 use Getopt::Long qw(GetOptionsFromArray);
 Getopt::Long::Configure("pass_through");
 
+use B::DeparseTree::Fragment;
 use Devel::Trepan::Deparse;
 use Devel::Trepan::DB::LineCache;
 
@@ -31,8 +33,6 @@ use strict;
 
 use vars qw(@ISA @EXPORT);
 @ISA = qw(Devel::Trepan::CmdProcessor::Command);
-push @ISA, 'Exporter';
-@EXPORT = qw(pmsg pmsg_info deparse_offset get_prev_addr);
 
 use vars @CMD_VARS;  # Value inherited from parent
 
@@ -154,7 +154,7 @@ sub run($$)
     my @options = parse_options($self, \@args);
 
     my $proc     = $self->{proc};
-    if (@options eq ('help')) {
+    if (@options and $options[0] eq 'help') {
 	my $help_cmd = $proc->{commands}{help};
 	$help_cmd->run( ['help', 'deparse'] );
 	return;
@@ -211,21 +211,26 @@ sub run($$)
 
 	if ($addr) {
 	    my $op_info = deparse_offset($funcname, $addr);
-	    if ($op_info) {
-		my $parent_info = deparse_offset($funcname, $op_info->{parent});
+	    if ($op_info && $op_info->{parent}) {
+		my $parent_info = get_parent_addr_info($op_info);
 		if ($want_prev_position) {
-		    my $prev_info = get_prev_addr($deparse, $op_info);
+		    my $prev_info = get_parent_addr_info($op_info);
 		    pmsg_info($proc, \@options, "called location", $prev_info);
 		    pmsg_info($proc, \@options, 'code to be run after function return',
 				$op_info);
 		    pmsg_info($proc, \@options, 'contained in', $parent_info);
 		} else {
 		    my $mess =
-			($proc->{op_addr} && $addr == $proc->{op_addr}) ?
-			'code to be run next' :
-			sprintf("code at address 0x%x", $addr);
-		    pmsg_info($proc, \@options, $mess, $op_info);
-		    pmsg_info($proc, \@options, 'contained in', $parent_info);
+			($proc->{op_addr} && $addr == $proc->{op_addr})
+			? sprintf("code at address 0x%x:", $addr)
+			: 'code to be run next:';
+		    $proc->msg($mess);
+		    my $extract_texts = extract_node_info($op_info);
+		    if ($extract_texts) {
+			pmsg($proc, join("\n", @$extract_texts))
+		    } else {
+			pmsg($proc, $op_info->{text});
+		    }
 		}
 		address_options($proc, $op_info, $args[1]) if $args[1];
 		return;

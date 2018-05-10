@@ -8,10 +8,12 @@ use warnings; no warnings 'redefine';
 use B;
 use B::DeparseTree;
 use B::DeparseTree::Printer; # qw(short_str);
+use Data::Printer;
 
 package Devel::Trepan::CmdProcessor::Command::Deparse;
 
 
+use Scalar::Util qw(looks_like_number);
 use English qw( -no_match_vars );
 use Getopt::Long qw(GetOptionsFromArray);
 Getopt::Long::Configure("pass_through");
@@ -43,7 +45,7 @@ our $NAME = set_name();
 our $HELP = <<'HELP';
 =pod
 
-B<deparse> [I<address options>] [0xOP-address | . ]  [dump | tree]
+B<deparse> [I<address options>] [0xOP-address | . ]
 
 B<deparse> [I<B::DeparseTree-options>] {I<filename> | I<subroutine>}
 
@@ -58,13 +60,13 @@ shows information for that file or function.
 
 B::DeparseTree options:
 
-    -d  | --dumper   Output data values using Data::Dumper
-    -l  | --line     Add '# line' comment
-          --offsets  show all offsets
-    -a  | --address  Add 'OP addresses in '# line' comment
-    -p  | --parent   Show parent information
-    -q  | --quote    Expand double-quoted strings
-    -h  | --help     run 'help deparse' (this text)
+    -t  | --tree        Show full optree
+    -l  | --line        Add '# line' comment
+          --offsets     show all offsets
+    -a  | --address     Add 'OP addresses in '# line' comment
+    -p  | --parent <n>  Show parent text to level <n>
+    -q  | --quote       Expand double-quoted strings
+    -h  | --help        run 'help deparse' (this text)
 
 
 Deparse Perl source code using L<B::DeparseTree>.
@@ -108,13 +110,13 @@ sub parse_options($$)
     my $opts = {};
     my $result =
 	&GetOptionsFromArray($args,
-			     'h|help'    => \$opts->{'help'},
-			     'd|dumper'  => \$opts->{'dumper'},
-			     'l|line'    => \$opts->{'line'},
-			     'offsets'   => \$opts->{'offsets'},
-			     'p|parent'  => \$opts->{'parent'},
-			     'a|address' => \$opts->{'address'},
-			     'q|quote'   => \$opts->{'quote'}
+			     'h|help'      => \$opts->{'help'},
+			     't|tree'      => \$opts->{'tree'},
+			     'l|line'      => \$opts->{'line'},
+			     'offsets'     => \$opts->{'offsets'},
+			     'p|parent:i'  => \$opts->{'parent'},
+			     'a|address'   => \$opts->{'address'},
+			     'q|quote'     => \$opts->{'quote'}
         );
     $opts;
 }
@@ -147,6 +149,21 @@ sub address_options($$$)
 
 }
 
+# FIXME combine with Command::columnize_commands
+use Array::Columnize;
+sub columnize_addrs($$)
+{
+    my ($proc, $commands) = @_;
+    my $width = $proc->{settings}->{maxwidth};
+    my $r = Array::Columnize::columnize($commands,
+                                       {displaywidth => $width,
+                                        colsep => '    ',
+                                        ljust => 1,
+                                        lineprefix => '  '});
+    chomp $r;
+    return $r;
+}
+
 # This method runs the command
 sub run($$)
 {
@@ -160,7 +177,7 @@ sub run($$)
 	my $help_cmd = $proc->{commands}{help};
 	$help_cmd->run( ['help', 'deparse'] );
 	return;
-    };
+    }
 
     my $filename = $proc->{list_filename};
     my $frame    = $proc->{frame};
@@ -202,6 +219,24 @@ sub run($$)
 	return;
     }
 
+    if ($options->{'tree'} || $options->{'offsets'}) {
+	my $deparse = B::DeparseTree->new();
+	if ($funcname eq "DB::DB") {
+	    $funcname = "main::main";
+	}
+	$deparse->coderef2info(\&$funcname);
+	if ($options->{'tree'}) {
+	    Data::Printer::p $deparse->{optree};
+	} elsif ($options->{'offsets'}) {
+	    my @addrs = sort keys %{$deparse->{optree}}, "\n";
+	    @addrs = map sprintf("0x%x", $_), @addrs;
+	    my $msg = columnize_addrs($proc, \@addrs);
+	    $proc->section("Addresses in $funcname");
+	    $proc->msg($msg);
+	}
+	return;
+    }
+
     my $text;
     # FIXME: we assume func below, add parse options like filename, and
     if ($want_runtime_position) {
@@ -213,26 +248,46 @@ sub run($$)
 
 	if ($addr) {
 	    my $op_info = deparse_offset($funcname, $addr);
-	    if ($op_info && $op_info->{parent}) {
-		my $parent_info = get_parent_addr_info($op_info);
-		if ($want_prev_position) {
-		    my $prev_info = get_parent_addr_info($op_info);
-		    pmsg_info($proc, $options, "called location", $prev_info);
-		    pmsg_info($proc, $options, 'code to be run after function return',
-				$op_info);
-		    pmsg_info($proc, $options, 'contained in', $parent_info);
-		} else {
-		    my $mess =
-			($proc->{op_addr} && $addr == $proc->{op_addr})
-			? sprintf("%s %s at address 0x%x:", $op_info->{type}, $op_info->{op}, $addr)
-			: 'code to be run next:';
-		    $proc->msg($mess);
-		    my $extract_texts = extract_node_info($op_info);
-		    if ($extract_texts) {
-			pmsg($proc, join("\n", @$extract_texts))
-		    } else {
+
+	    if ($op_info) {
+		my $parent_count = $options->{parent};
+		if (looks_like_number($options->{parent})) {
+		    my $maxwidth = $proc->{settings}->{maxwidth};
+		    my $sep = '-' x ($maxwidth > 20 ? 20 : $maxwidth);
+		    for (my $i=0; $i <= $parent_count && $op_info; $i++) {
+			$proc->msg($proc->bolden(sprintf("%02d:", $i)));
 			pmsg($proc, $op_info->{text});
+			$op_info = get_parent_addr_info($op_info);
+			$proc->msg($sep) if $i <= ($parent_count-1) && $op_info;
 		    }
+		    return;
+		}
+
+		my $parent_info = get_parent_addr_info($op_info);
+		if ($op_info->{parent}) {
+		    if ($want_prev_position) {
+			my $prev_info = get_parent_addr_info($op_info);
+			pmsg_info($proc, $options, "called location", $prev_info);
+			pmsg_info($proc, $options, 'code to be run after function return',
+				  $op_info);
+			pmsg_info($proc, $options, 'contained in', $parent_info);
+		    } else {
+			my $op = $op_info->{op};
+			my $mess =
+			    ($proc->{op_addr} && $addr == $proc->{op_addr})
+			    ? sprintf("%s, %s %s\n\tat address 0x%x:",
+				      $op_info->{type}, $op->name, $op, $addr)
+			    : 'code to be run next:';
+			$proc->msg($mess);
+			my $extract_texts = extract_node_info($op_info);
+			if ($extract_texts) {
+			    pmsg($proc, join("\n", @$extract_texts))
+			} else {
+			    pmsg($proc, $op_info->{text});
+			}
+		    }
+		} else {
+		    pmsg($proc, $op_info->{text});
 		}
 		address_options($proc, $op_info, $args[1]) if $args[1];
 		return;

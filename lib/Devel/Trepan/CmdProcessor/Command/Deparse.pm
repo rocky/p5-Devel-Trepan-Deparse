@@ -253,7 +253,7 @@ sub run($$)
 		my $parent_count = $options->{parent};
 		if (looks_like_number($options->{parent})) {
 		    my $maxwidth = $proc->{settings}->{maxwidth};
-		    my $sep = '-' x ($maxwidth > 20 ? 20 : $maxwidth);
+		    my $sep = ' -' x ($maxwidth / 2 > 20 ? 20 : $maxwidth / 2);
 		    for (my $i=0; $i <= $parent_count && $op_info; $i++) {
 			$proc->msg($proc->bolden(sprintf("%02d:", $i)));
 			pmsg($proc, $op_info->{text});

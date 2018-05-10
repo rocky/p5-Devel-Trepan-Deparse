@@ -60,6 +60,7 @@ my $builder = Module::Build->new(
 	'Devel::Trepan'                     => '0.73',
         'rlib'                              => '0.02',
         'B::DeparseTree'                    => '3.0.0',
+        'Data::Printer'                     => '0.40',
     },
     sign                => ($ENV{PERL_MB_NOSIGN} ? 0 : 1),
     );

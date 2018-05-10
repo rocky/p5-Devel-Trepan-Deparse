@@ -27,7 +27,7 @@ sub pmsg_info
     my ($proc, $options, $leader, $info) = @_;
     return unless $info;
     my $text = $info->{text};
-    if (grep($_ eq '-a', @{$options})) {
+    if ($options->{'address'}) {
 	$leader = sprintf "OP: 0x%0x $leader", ${$info->{op}};
     }
     $proc->msg("# ${leader}...") if $leader;

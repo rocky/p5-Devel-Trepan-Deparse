@@ -58,12 +58,13 @@ shows information for that file or function.
 
 B::DeparseTree options:
 
-    -d  | --dumper  Output data values using Data::Dumper
-    -l  | --line    Add '# line' comment
-    -a  | --address Add 'OP addresses in '# line' comment
-    -P  | --parent  Disable prototype checking
-    -q  | --quote   Expand double-quoted strings
-    -h  | --help    run 'help deparse' (this text)
+    -d  | --dumper   Output data values using Data::Dumper
+    -l  | --line     Add '# line' comment
+          --offsets  show all offsets
+    -a  | --address  Add 'OP addresses in '# line' comment
+    -p  | --parent   Show parent information
+    -q  | --quote    Expand double-quoted strings
+    -h  | --help     run 'help deparse' (this text)
 
 
 Deparse Perl source code using L<B::DeparseTree>.
@@ -104,17 +105,18 @@ sub parse_options($$)
 {
     my ($self, $args) = @_;
     $Getopt::Long::autoabbrev = 1;
-    my @opts = ();
+    my $opts = {};
     my $result =
 	&GetOptionsFromArray($args,
-			     'h|help'    => sub {@opts = ('help') },
-			     'd|dumper'  => sub {push(@opts, '-d') },
-			     'l|line'    => sub {push(@opts, '-l') },
-			     'P|parent'  => sub {push(@opts, '-P') },
-			     'a|address' => sub {push(@opts, '-a') },
-			     'q|quote'   => sub {push(@opts, '-q') }
+			     'h|help'    => \$opts->{'help'},
+			     'd|dumper'  => \$opts->{'dumper'},
+			     'l|line'    => \$opts->{'line'},
+			     'offsets'   => \$opts->{'offsets'},
+			     'p|parent'  => \$opts->{'parent'},
+			     'a|address' => \$opts->{'address'},
+			     'q|quote'   => \$opts->{'quote'}
         );
-    @opts;
+    $opts;
 }
 
 # Elide string with ... if it is too long, and
@@ -151,10 +153,10 @@ sub run($$)
     my ($self, $args) = @_;
     my @args     = @$args;
     @args = splice(@args, 1, scalar(@args), -2);
-    my @options = parse_options($self, \@args);
+    my $options = parse_options($self, \@args);
 
     my $proc     = $self->{proc};
-    if (@options and $options[0] eq 'help') {
+    if ($options->{'help'}) {
 	my $help_cmd = $proc->{commands}{help};
 	$help_cmd->run( ['help', 'deparse'] );
 	return;
@@ -215,14 +217,14 @@ sub run($$)
 		my $parent_info = get_parent_addr_info($op_info);
 		if ($want_prev_position) {
 		    my $prev_info = get_parent_addr_info($op_info);
-		    pmsg_info($proc, \@options, "called location", $prev_info);
-		    pmsg_info($proc, \@options, 'code to be run after function return',
+		    pmsg_info($proc, $options, "called location", $prev_info);
+		    pmsg_info($proc, $options, 'code to be run after function return',
 				$op_info);
-		    pmsg_info($proc, \@options, 'contained in', $parent_info);
+		    pmsg_info($proc, $options, 'contained in', $parent_info);
 		} else {
 		    my $mess =
 			($proc->{op_addr} && $addr == $proc->{op_addr})
-			? sprintf("code at address 0x%x:", $addr)
+			? sprintf("%s %s at address 0x%x:", $op_info->{type}, $op_info->{op}, $addr)
 			: 'code to be run next:';
 		    $proc->msg($mess);
 		    my $extract_texts = extract_node_info($op_info);
@@ -248,11 +250,11 @@ sub run($$)
 		} else {
 		    my $parent_info = deparse_offset($funcname, $op_info->{parent});
 		    if ($parent_info) {
-			pmsg_info($proc, \@options, '', $op_info);
-			pmsg_info($proc, \@options, ' contained in', $parent_info);
+			pmsg_info($proc, $options, '', $op_info);
+			pmsg_info($proc, $options, ' contained in', $parent_info);
 			return;
 		    }
-		    pmsg_info($proc, \@options, 'code to run next', $op_info);
+		    pmsg_info($proc, $options, 'code to run next', $op_info);
 		}
 		address_options($proc, $op_info, $args[1]) if $args[1];
 	    } else {
@@ -269,7 +271,12 @@ sub run($$)
 	    return;
 	}
     } else  {
-	my $options = join(',', @options);
+	my $deparse_opts='';
+	foreach my $opt ('dumper', 'line', 'address') {
+	    if ($options->{$opt}) {
+		$deparse_opts .= ('-' . substr($deparse_opts, 0, 1))
+	    }
+	}
 	if (!-r $filename) {
 	    $proc->errmsg("No readable perl script: " . $filename)
 	} else {

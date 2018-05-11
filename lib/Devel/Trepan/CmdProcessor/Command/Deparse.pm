@@ -66,6 +66,7 @@ B::DeparseTree options:
     -a  | --address     Add 'OP addresses in '# line' comment
     -p  | --parent <n>  Show parent text to level <n>
     -q  | --quote       Expand double-quoted strings
+    -d  | --debug       Show debug information
     -h  | --help        run 'help deparse' (this text)
 
 
@@ -116,7 +117,8 @@ sub parse_options($$)
 			     'offsets'     => \$opts->{'offsets'},
 			     'p|parent:i'  => \$opts->{'parent'},
 			     'a|address'   => \$opts->{'address'},
-			     'q|quote'     => \$opts->{'quote'}
+			     'q|quote'     => \$opts->{'quote'},
+			     'debug'       => \$opts->{'debug'}
         );
     $opts;
 }
@@ -272,12 +274,22 @@ sub run($$)
 				  $op_info);
 			pmsg_info($proc, $options, 'contained in', $parent_info);
 		    } else {
+			if ($options->{debug}) {
+			    use Data::Printer;
+			    p $op_info ;
+			    $proc->msg('- -' x 20);
+			    p $parent_info;
+			}
 			my $op = $op_info->{op};
-			my $mess =
-			    ($proc->{op_addr} && $addr == $proc->{op_addr})
-			    ? sprintf("%s, %s %s\n\tat address 0x%x:",
-				      $op_info->{type}, $op->name, $op, $addr)
-			    : 'code to be run next:';
+			my $mess = $op_info->{type};
+			if ($op->can('name')) {
+			    $mess .= sprintf(', %s ', $op->name);
+			} else {
+			    $mess .= ', '
+			}
+			if ($proc->{op_addr} and $addr == $proc->{op_addr}) {
+			    $mess .= sprintf("%s\n\tat address 0x%x:", $op, $proc->{op_addr});
+			}
 			$proc->msg($mess);
 			my $extract_texts = extract_node_info($op_info);
 			if ($extract_texts) {

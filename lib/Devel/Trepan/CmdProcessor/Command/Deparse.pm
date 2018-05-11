@@ -257,7 +257,7 @@ sub run($$)
 		    my $maxwidth = $proc->{settings}->{maxwidth};
 		    my $sep = ' -' x ($maxwidth / 2 > 20 ? 20 : $maxwidth / 2);
 		    for (my $i=0; $i <= $parent_count && $op_info; $i++) {
-			$proc->msg($proc->bolden(sprintf("%02d:", $i)));
+			$proc->msg($proc->bolden(sprintf("%02d %s:", $i, $op_info->{type})));
 			pmsg($proc, $op_info->{text});
 			$op_info = get_parent_addr_info($op_info);
 			$proc->msg($sep) if $i <= ($parent_count-1) && $op_info;

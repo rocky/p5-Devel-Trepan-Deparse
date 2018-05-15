@@ -250,7 +250,11 @@ sub run($$)
 
 	if ($addr) {
 	    my $op_info = deparse_offset($funcname, $addr);
-
+	    if ($want_prev_position) {
+		$op_info = get_prev_addr_info($op_info);
+		$proc->errmsg(sprintf("Can't previous op info for op at 0x%x", $addr));
+		return
+	    }
 	    if ($op_info) {
 		my $parent_count = $options->{parent};
 		if (looks_like_number($options->{parent})) {
@@ -267,36 +271,28 @@ sub run($$)
 
 		my $parent_info = get_parent_addr_info($op_info);
 		if ($op_info->{parent}) {
-		    if ($want_prev_position) {
-			my $prev_info = get_parent_addr_info($op_info);
-			pmsg_info($proc, $options, "called location", $prev_info);
-			pmsg_info($proc, $options, 'code to be run after function return',
-				  $op_info);
-			pmsg_info($proc, $options, 'contained in', $parent_info);
+		    if ($options->{debug}) {
+			use Data::Printer;
+			p $op_info ;
+			$proc->msg('- -' x 20);
+			p $parent_info;
+		    }
+		    my $op = $op_info->{op};
+		    my $mess = $op_info->{type};
+		    if ($op->can('name')) {
+			$mess .= sprintf(', %s ', $op->name);
 		    } else {
-			if ($options->{debug}) {
-			    use Data::Printer;
-			    p $op_info ;
-			    $proc->msg('- -' x 20);
-			    p $parent_info;
-			}
-			my $op = $op_info->{op};
-			my $mess = $op_info->{type};
-			if ($op->can('name')) {
-			    $mess .= sprintf(', %s ', $op->name);
-			} else {
-			    $mess .= ', '
-			}
-			if ($proc->{op_addr} and $addr == $proc->{op_addr}) {
-			    $mess .= sprintf("%s\n\tat address 0x%x:", $op, $proc->{op_addr});
-			}
-			$proc->msg($mess);
-			my $extract_texts = extract_node_info($op_info);
-			if ($extract_texts) {
-			    pmsg($proc, join("\n", @$extract_texts))
-			} else {
-			    pmsg($proc, $op_info->{text});
-			}
+			$mess .= ', '
+		    }
+		    if ($proc->{op_addr} and $addr == $proc->{op_addr}) {
+			$mess .= sprintf("%s\n\tat address 0x%x:", $op, $proc->{op_addr});
+		    }
+		    $proc->msg($mess);
+		    my $extract_texts = extract_node_info($op_info);
+		    if ($extract_texts) {
+			pmsg($proc, join("\n", @$extract_texts))
+		    } else {
+			pmsg($proc, $op_info->{text});
 		    }
 		} else {
 		    pmsg($proc, $op_info->{text});

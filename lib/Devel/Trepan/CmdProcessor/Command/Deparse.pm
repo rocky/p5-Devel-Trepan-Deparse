@@ -242,18 +242,20 @@ sub run($$)
     my $text;
     # FIXME: we assume func below, add parse options like filename, and
     if ($want_runtime_position) {
-	# FIXME: ideally $deparse would be internal only to deparse_offset
-	# However some branches need $deparse is used for other purposes
-	# rather than duplicate this code, it is here once, on the
-	# most likely branches it is not used.
+	# FIXME: ideally the variable $deparse would be internal only
+	# to deparse_offset However some branches need $deparse is
+	# used for other purposes rather than duplicate this code, it
+	# is here once, on the most likely branches it is not used.
 	my $deparse = B::DeparseTree->new();
 
 	if ($addr) {
 	    my $op_info = deparse_offset($funcname, $addr);
+	    if (!$op_info) {
+		$proc->errmsg(sprintf("Can't find info for op at 0x%x", $addr));
+		return;
+	    }
 	    if ($want_prev_position) {
 		$op_info = get_prev_addr_info($op_info);
-		$proc->errmsg(sprintf("Can't previous op info for op at 0x%x", $addr));
-		return
 	    }
 	    if ($op_info) {
 		my $parent_count = $options->{parent};
@@ -278,7 +280,14 @@ sub run($$)
 			p $parent_info;
 		    }
 		    my $op = $op_info->{op};
-		    my $mess = $op_info->{type};
+
+		    my $mess = '';
+		    if ($addr != $op_info->{addr}) {
+			$mess .= "a subchild of ";
+		    }
+
+		    $mess .= $op_info->{type};
+
 		    if ($op->can('name')) {
 			$mess .= sprintf(', %s ', $op->name);
 		    } else {

@@ -1,17 +1,18 @@
 -- main::(five.pl:4 @0x1234567)
 my $x = "Something simple to demo 'deparse'";
-single delimiter q, B::PV=SCALAR(0x1234567)
+a subchild of string q .. q, B::PV=SCALAR(0x1234567)
 	code at address 0x1234567:
-my $x = q[Something simple to demo 'deparse']
+my $x = q[Something simple to demo 'deparse'];
         -------------------------------------
 package main::five;
-sub five{
-    5;
+sub five
+{
+    5
 }
 x1 main::(five.pl:2 @0x1234567)
     5
-const, const B::SVOP=SCALAR(0x1234567)
+a subchild of integer constant 5, const B::SVOP=SCALAR(0x1234567)
 	code at address 0x1234567:
-5;
-~
+5
+-
 trepan.pl: That's all, folks...

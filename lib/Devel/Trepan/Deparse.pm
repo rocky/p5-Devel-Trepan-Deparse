@@ -76,12 +76,60 @@ The first place is before the grep starts at all. Here, deparse will show:
 
 But also you might be stopped inside grep. Here deparse will show:
 
-    # code to be run next...
-    $type
-    # contained in...
-    $type eq $_
+    $ deparse
+    grepwhile, pushmark B::OP=SCALAR(0x563a8ab1c268)
+        at address 0x563a871c07d0:
+    if (grep { $type eq $_ } 'MSDOS', 'DOS', 'MSWin32', 'Epoc') {
+             |    # code to be run next...
 
-Knowing which of these two locations can be helpful. For example if you are stopped in the latter location, you can evaluate `$_` to see where in the loop you are at.
+The C<|> indicates that a "pushmark" really doesn't have an exact
+correspondence in the source text, but roughly here it is about where
+you would just before stepping into the block. In partular variable C<$_> has not
+been set.
+
+But notice that when we C<step> athough we are on the same line, we
+are at a different position in the statement:
+
+    $ step
+    $ deparse
+
+    (trepanpl): deparse
+    not my, padsv B::OP=SCALAR(0x563a8abd51a8)
+        at address 0x563a871c0a78:
+    $type eq $_
+    -----
+
+So now we are actually inside the block, and so C<$_> is now set. If
+the above wasn't enough context to indicate where you are the C<-p>
+option on deparse will show you parent levels in the tree:
+
+
+(trepanpl): deparse -p 3
+
+    00 not my:
+    $type
+     - - - - - - - - - - - - - - - - - - - -
+    01 binary operator eq:
+    $type eq $_
+     - - - - - - - - - - - - - - - - - - - -
+    02 statements:
+     $type eq $_
+     - - - - - - - - - - - - - - - - - - - -
+    03 map grep block:
+    grep { $type eq $_ } 'MSDOS', 'DOS', 'MSWin32', 'Epoc'
+    (trepanpl): 00 not my:
+    $type
+     - - - - - - - - - - - - - - - - - - - -
+    01 binary operator eq:
+    $type eq $_
+     - - - - - - - - - - - - - - - - - - - -
+    02 statements:
+    $type eq $_
+     - - - - - - - - - - - - - - - - - - - -
+    03 map grep block:
+    grep { $type eq $_ } 'MSDOS', 'DOS', 'MSWin32', 'Epoc'
+    (trepanpl):
+
 
 See L<Exact Perl location with B::Deparse (and Devel::Callsite)|http://blogs.perl.org/users/rockyb/2015/11/exact-perl-location-with-bdeparse-and-develcallsite.html>.
 

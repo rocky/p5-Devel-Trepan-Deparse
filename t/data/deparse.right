@@ -1,6 +1,9 @@
+*** Error instantiating Deval
+*** Goto undefined subroutine &DynaLoader::init at /home/rocky/perl5/perlbrew/perls/perl-5.26.2/lib/site_perl/5.26.2/Devel/Trepan/IO/../../../Devel/Trepan/CmdProcessor/Command.pm line 24.
+
 -- main::(five.pl:4 @0x1234567)
 my $x = "Something simple to demo 'deparse'";
-a subchild of string q .. q, B::PV=SCALAR(0x1234567)
+a subchild of string q, B::PV=SCALAR(0x1234567)
 	code at address 0x1234567:
 my $x = q[Something simple to demo 'deparse'];
         -------------------------------------

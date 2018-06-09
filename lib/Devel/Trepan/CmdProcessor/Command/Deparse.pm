@@ -223,14 +223,14 @@ sub run($$)
 
     if ($options->{'tree'} || $options->{'offsets'}) {
 	my $deparse = B::DeparseTree->new();
-	if ($funcname eq "DB::DB") {
-	    $funcname = "main::main";
-	}
+	# if ($funcname eq "DB::DB") {
+	#     $funcname = "main::main";
+	# }
 	$deparse->coderef2info(\&$funcname);
 	if ($options->{'tree'}) {
 	    Data::Printer::p $deparse->{optree};
 	} elsif ($options->{'offsets'}) {
-	    my @addrs = sort keys %{$deparse->{optree}}, "\n";
+	    my @addrs = sort keys %{$deparse->{optree}};
 	    @addrs = map sprintf("0x%x", $_), @addrs;
 	    my $msg = columnize_addrs($proc, \@addrs);
 	    $proc->section("Addresses in $funcname");
@@ -249,6 +249,7 @@ sub run($$)
 	my $deparse = B::DeparseTree->new();
 
 	if ($addr) {
+	    print "XXX $funcname\n";
 	    my $op_info = deparse_offset($funcname, $addr);
 	    if (!$op_info) {
 		$proc->errmsg(sprintf("Can't find info for op at 0x%x", $addr));

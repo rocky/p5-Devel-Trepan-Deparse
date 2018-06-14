@@ -184,12 +184,17 @@ sub run($$)
 	return;
     }
 
-    my $filename = $proc->{list_filename};
-    my $frame    = $proc->{frame};
-    my $funcname = $proc->{frame}{fn};
+    # Get frame information
+    my $frame_num = exists($proc->{frame_index}) ?
+	$proc->{frame_index} : 0;
+    my $filename  = $proc->{list_filename};
+    my $frame     = $proc->{frame};
+    my $funcname  = exists $frame->{'fn'} && $frame->{'fn'} ?
+	$frame->{'fn'} : 'main::main';
+
     my $addr;
     my $want_runtime_position = 0;
-    my $want_prev_position = exists($proc->{frame_index}) && ($proc->{frame_index} != 0);
+    my $want_prev_position = $frame_num != 0;
     if (scalar @args == 0) {
 	# Use function if there is one. Otherwise use
 	# the current file.
@@ -254,7 +259,7 @@ sub run($$)
 	if ($addr) {
 	    my $op_info = deparse_offset($funcname, $addr);
 	    if (!$op_info) {
-		$proc->errmsg(sprintf("Can't find info for op at 0x%x", $addr));
+		$proc->errmsg(sprintf("Can't find info for op at 0x%x in $funcname", $addr));
 		return;
 	    }
 	    if ($want_prev_position) {

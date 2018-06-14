@@ -32,6 +32,9 @@ use constant NEED_STACK => 0;
 use Devel::Trepan::CmdProcessor::Command qw(@CMD_ISA @CMD_VARS set_name);
 
 use strict;
+# require 64-bit since we may have 64-bit hexadecimal-numbers as
+# addresses
+no warnings 'portable';
 
 use vars qw(@ISA @EXPORT);
 @ISA = qw(Devel::Trepan::CmdProcessor::Command);
@@ -249,7 +252,6 @@ sub run($$)
 	my $deparse = B::DeparseTree->new();
 
 	if ($addr) {
-	    print "XXX $funcname\n";
 	    my $op_info = deparse_offset($funcname, $addr);
 	    if (!$op_info) {
 		$proc->errmsg(sprintf("Can't find info for op at 0x%x", $addr));
@@ -353,7 +355,8 @@ sub run($$)
 	if (!-r $filename) {
 	    $proc->errmsg("No readable perl script: " . $filename)
 	} else {
-	    my $cmd="$EXECUTABLE_NAME  -MO=DeparseTree,-sC,$options $filename";
+	    my $deparse_opts = '';
+	    my $cmd="$EXECUTABLE_NAME  -MO=DeparseTree,-sC,$deparse_opts $filename";
 	    $text = `$cmd 2>&1`;
 	    if ($? >> 8 == 0) {
 		pmsg($proc, $text, 0);

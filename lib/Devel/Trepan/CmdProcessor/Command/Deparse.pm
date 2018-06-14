@@ -114,14 +114,15 @@ sub parse_options($$)
     my $opts = {};
     my $result =
 	&GetOptionsFromArray($args,
-			     'h|help'      => \$opts->{'help'},
-			     't|tree'      => \$opts->{'tree'},
-			     'l|line'      => \$opts->{'line'},
-			     'offsets'     => \$opts->{'offsets'},
-			     'p|parent:i'  => \$opts->{'parent'},
-			     'a|address'   => \$opts->{'address'},
-			     'q|quote'     => \$opts->{'quote'},
-			     'debug'       => \$opts->{'debug'}
+			     'h|help'        => \$opts->{'help'},
+			     't|tree'        => \$opts->{'tree'},
+			     'l|line'        => \$opts->{'line'},
+			     'offsets'       => \$opts->{'offsets'},
+			     'p|parent:i'    => \$opts->{'parent'},
+			     'a|address'     => \$opts->{'address'},
+			     'f|function:s'  => \$opts->{'function'},
+			     'q|quote'       => \$opts->{'quote'},
+			     'debug'         => \$opts->{'debug'}
         );
     $opts;
 }
@@ -191,6 +192,7 @@ sub run($$)
     my $frame     = $proc->{frame};
     my $funcname  = exists $frame->{'fn'} && $frame->{'fn'} ?
 	$frame->{'fn'} : 'main::main';
+    $funcname = $options->{'function'} if $options->{'function'};
 
     my $addr;
     my $want_runtime_position = 0;

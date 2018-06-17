@@ -67,6 +67,7 @@ B::DeparseTree options:
     -l  | --line        Add '# line' comment
           --offsets     show all offsets
     -a  | --address     Add 'OP addresses in '# line' comment
+    -f  | --function    Set function to look up offset
     -p  | --parent <n>  Show parent text to level <n>
     -q  | --quote       Expand double-quoted strings
     -d  | --debug       Show debug information

@@ -113,6 +113,7 @@ how-to-make-a-release\.txt
 
 \blib/Devel/Trepan/CmdProcessor/Command/Deval.pm
 \bcircle.yml$
+^\.circleci/config.yml$
 \bgit2cl$
 
 \badmin

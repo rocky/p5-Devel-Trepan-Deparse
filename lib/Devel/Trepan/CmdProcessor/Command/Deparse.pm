@@ -120,6 +120,7 @@ sub parse_options($$)
 			     'l|line'        => \$opts->{'line'},
 			     'offsets'       => \$opts->{'offsets'},
 			     'p|parent:i'    => \$opts->{'parent'},
+			     'P|previous'    => \$opts->{'previous'},
 			     'a|address'     => \$opts->{'address'},
 			     'f|function:s'  => \$opts->{'function'},
 			     'q|quote'       => \$opts->{'quote'},
@@ -197,13 +198,15 @@ sub run($$)
 
     my $addr;
     my $want_runtime_position = 0;
-    my $want_prev_position = $frame_num != 0;
+    my $want_prev_position = ($frame_num != 0) || $options->{'previous'};
     if (scalar @args == 0) {
 	# Use function if there is one. Otherwise use
 	# the current file.
 	if ($proc->{stack_size} > 0 && $funcname) {
 	    $want_runtime_position = 1;
-	    $addr = $proc->{op_addr};
+	    $frame_num = $proc->{frame_index};
+	    $frame     = $proc->{frame};
+	    $addr = $frame->{addr};
 	}
     } elsif (scalar @args <= 2) {
 	if ($args[0] =~ /^@?(0x[0-9a-fA-F]+)/) {

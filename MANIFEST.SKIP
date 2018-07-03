@@ -111,7 +111,7 @@ how-to-make-a-release\.txt
 # Avoid Devel::Cover files.
 \bcover_db\b
 
-\blib/Devel/Trepan/CmdProcessor/Command/Deval.pm
+\blib/Devel/Trepan/CmdProcessor/Command/Deval.pm-notyet
 \bcircle.yml$
 ^\.circleci/config.yml$
 \bgit2cl$

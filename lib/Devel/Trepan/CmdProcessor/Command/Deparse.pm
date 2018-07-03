@@ -9,6 +9,7 @@ use B;
 use B::DeparseTree;
 use B::DeparseTree::Printer; # qw(short_str);
 use Data::Printer;
+use 5.010;
 
 package Devel::Trepan::CmdProcessor::Command::Deparse;
 
@@ -188,24 +189,32 @@ sub run($$)
     }
 
     # Get frame information
-    my $frame_num = exists($proc->{frame_index}) ?
-	$proc->{frame_index} : 0;
-    my $filename  = $proc->{list_filename};
-    my $frame     = $proc->{frame};
-    my $funcname  = exists $frame->{'fn'} && $frame->{'fn'} ?
-	$frame->{'fn'} : 'main::main';
+    my $have_frame = exists($proc->{frame_index});
+    my ($frame_num, $frame, $funcname, $filename, $pkg);
+    if ($have_frame) {
+	$frame_num = $proc->{frame_index};
+	my $is_last = $frame_num == $proc->{stack_size}-1;
+	$frame     = $proc->{frame};
+	$filename  = $frame->{file};
+	unless ($is_last) {
+	    $funcname  = $frame->{fn};
+	} else {
+	    $funcname = "DB::DB";
+	}
+	$pkg  = $frame->{pkg};
+    }
+
     $funcname = $options->{'function'} if $options->{'function'};
 
     my $addr;
     my $want_runtime_position = 0;
-    my $want_prev_position = ($frame_num != 0) || $options->{'previous'};
+    my $want_prev_position = $have_frame &&
+	($frame_num != 0) || $options->{'previous'};
     if (scalar @args == 0) {
 	# Use function if there is one. Otherwise use
 	# the current file.
-	if ($proc->{stack_size} > 0 && $funcname) {
+	if ($have_frame) {
 	    $want_runtime_position = 1;
-	    $frame_num = $proc->{frame_index};
-	    $frame     = $proc->{frame};
 	    $addr = $frame->{addr};
 	}
     } elsif (scalar @args <= 2) {
@@ -363,7 +372,7 @@ sub run($$)
 		$deparse_opts .= ('-' . substr($deparse_opts, 0, 1))
 	    }
 	}
-	if (!-r $filename) {
+	if ($filename && !-r $filename) {
 	    $proc->errmsg("No readable perl script: " . $filename)
 	} else {
 	    my $deparse_opts = '';
@@ -395,6 +404,7 @@ unless (caller) {
 	pkg  => __PACKAGE__,
 	addr => $$root_cv,
     };
+    $proc->{frame_index} = 0;
     $proc->{stack_size} = 1,
     $cmd->run([$NAME]);
     print '-' x 30, "\n";

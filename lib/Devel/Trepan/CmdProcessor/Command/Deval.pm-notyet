@@ -19,7 +19,9 @@ use constant MAX_ARGS  => 0;  # Need at most this many
 use strict;
 use Devel::Trepan::Util;
 
-use vars qw(@ISA); @ISA = @CMD_ISA;
+use vars qw(@ISA @EXPORT);
+@ISA = qw(Devel::Trepan::CmdProcessor::Command);
+
 use vars @CMD_VARS;  # Value inherited from parent
 
 our $NAME = set_name();

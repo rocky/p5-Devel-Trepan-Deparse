@@ -6,22 +6,19 @@ use rlib '../../../..';
 
 use warnings; no warnings 'redefine';
 use B;
-use B::DeparseTree;
-use B::DeparseTree::Printer; # qw(short_str);
 use Data::Printer;
 use 5.010;
 
 package Devel::Trepan::CmdProcessor::Command::Deparse;
 
+use B::DeparseTree::Fragment;
+use Devel::Trepan::Deparse;
+use Devel::Trepan::DB::LineCache;
 
 use Scalar::Util qw(looks_like_number);
 use English qw( -no_match_vars );
 use Getopt::Long qw(GetOptionsFromArray);
 Getopt::Long::Configure("pass_through");
-
-use B::DeparseTree::Fragment;
-use Devel::Trepan::Deparse;
-use Devel::Trepan::DB::LineCache;
 
 use constant CATEGORY   => 'data';
 use constant SHORT_HELP => 'Deparse source code via B::DeparseTree';
@@ -128,23 +125,6 @@ sub parse_options($$)
 			     'debug'         => \$opts->{'debug'}
         );
     $opts;
-}
-
-# Elide string with ... if it is too long, and
-# show control characters in string.
-sub short_str($;$) {
-    my ($str, $maxwidth) = @_;
-    $maxwidth ||= 20;
-
-    if (length($str) > $maxwidth) {
-	my $chop = $maxwidth - 3;
-	$str = substr($str, 0, $chop) . '...' . substr($str, -$chop);
-    }
-    $str =~ s/\cK/\\cK/g;
-    $str =~ s/\f/\\f/g;
-    $str =~ s/\n/\\n/g;
-    $str =~ s/\t/\\t/g;
-    return $str
 }
 
 sub address_options($$$)

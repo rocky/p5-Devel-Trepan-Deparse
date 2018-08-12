@@ -1,7 +1,7 @@
 Change Version
 --------------
 
-Check `$VERSION` in `lib/B/DeparseTree.pm`
+Check `$VERSION` in `lib/Devel/Trepan/Deparse.pm`
 run
 
 	perl ./Build.PL
@@ -14,7 +14,7 @@ Build tarball:
     make check
     make distcheck
 
-    DTD_VERSION=3.0.0 # or whatever it says in lib/Devel/Trepan/Deparse.pm
+    DTD_VERSION=3.1.0 # or whatever it says in lib/Devel/Trepan/Deparse.pm
     git commit -m"Get ready for release $DTD_VERSION" .
 
 Update ChangeLog:
@@ -26,13 +26,11 @@ Update NEWS
 ------------
 
     emacs NEWS
-    git commit --amend
+    git commit --amend .
 
 
 Final testing
 -------------
-
-  . ./admin/test-all.sh
 
    git push
    make dist

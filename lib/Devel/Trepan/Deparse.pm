@@ -55,7 +55,7 @@ download this file.
 
 =head1 NAME
 
-Perl Deparse plugin for L<Devel::Trepan> via L<B::DeparseTree>
+Devel::Trepan::Deparse - Perl Deparse plugin for L<Devel::Trepan> via L<B::DeparseTree>
 
 =head1 SUMMARY
 
